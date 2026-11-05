@@ -179,6 +179,11 @@ h1.div.navy{color:var(--navy)}
 .panel{position:absolute;right:0;top:0;bottom:0;width:500px;background:var(--navy);background-image:radial-gradient(420px 420px at 50% 40%,var(--glow,#22407f) 0%,rgba(34,64,127,0) 70%)}
 .vid{position:absolute;left:65px;top:32px;width:369px;height:656px}
 .vid video{width:100%;height:100%;display:block;object-fit:cover;background:#0a1428;border-radius:18px;box-shadow:0 22px 50px rgba(0,0,0,.55)}
+.bigplay{position:absolute;left:50%;top:50%;width:96px;height:96px;margin:-48px 0 0 -48px;border-radius:50%;border:0;padding:0;background:var(--gold);box-shadow:0 12px 34px rgba(0,0,0,.45),0 0 0 6px rgba(255,255,255,.28);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;transition:opacity .2s,transform .2s}
+.bigplay svg{width:46px;height:46px;fill:var(--navy);margin-left:7px}
+.bigplay:hover{transform:scale(1.07)}
+.bigplay.hide{opacity:0;pointer-events:none}
+body.export .bigplay{display:none!important}
 /* mapa 7 flujos */
 .timeline2{display:grid;grid-template-columns:repeat(7,1fr);margin-top:64px;position:relative}
 .timeline2::before{content:"";position:absolute;left:7%;right:7%;top:38px;border-top:2px dashed rgba(255,255,255,.28)}
@@ -902,6 +907,14 @@ body.export video::-webkit-media-controls{display:none!important}
       [].forEach.call(btns,function(b,i){ b.classList.toggle('on',i===k); });
     });
     v.addEventListener('ended',function(){[].forEach.call(btns,function(b){b.classList.remove('on');});});
+  });
+  [].forEach.call(document.querySelectorAll('.vid, .wvid'),function(c){
+    var v=c.querySelector('video'); if(!v) return;
+    var b=document.createElement('button'); b.type='button'; b.className='bigplay'; b.setAttribute('aria-label','Reproducir vídeo');
+    b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>'; c.appendChild(b);
+    var upd=function(){ b.classList.toggle('hide',!v.paused&&!v.ended); };
+    ['play','playing','pause','ended','seeked','loadeddata'].forEach(function(e){ v.addEventListener(e,upd); }); upd();
+    b.addEventListener('click',function(ev){ ev.stopPropagation(); if(!v.getAttribute('src')&&v.dataset.src){ v.src=v.dataset.src; } var p=v.play(); if(p&&p.catch){ p.catch(function(){}); } });
   });
   document.addEventListener('click',function(ev){
     var c=ev.target.closest&&ev.target.closest('.pcd[data-go]'); if(c){ goSec(c.getAttribute('data-go')); }
