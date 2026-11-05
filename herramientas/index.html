@@ -183,6 +183,8 @@ h1.div.navy{color:var(--navy)}
 .bigplay svg{width:46px;height:46px;fill:var(--navy);margin-left:7px}
 .bigplay:hover{transform:scale(1.07)}
 .bigplay.hide{opacity:0;pointer-events:none}
+.bigplay.wait{animation:bpw .8s ease-in-out infinite alternate}
+@keyframes bpw{from{transform:scale(1);opacity:1}to{transform:scale(.88);opacity:.6}}
 body.export .bigplay{display:none!important}
 /* mapa 7 flujos */
 .timeline2{display:grid;grid-template-columns:repeat(7,1fr);margin-top:64px;position:relative}
@@ -804,7 +806,8 @@ body.export video::-webkit-media-controls{display:none!important}
     [].forEach.call(slides[cur].querySelectorAll('video[data-auto]'),function(a){if(!a.getAttribute('src')&&a.dataset.src){a.src=a.dataset.src;}var pr=a.play();if(pr&&pr.catch){pr.catch(function(){});}});
     chapOn=false; chap.classList.remove('go','bye');
     if(!skipChap && slides[cur].classList.contains('flow')){ openChap(slides[cur]); }
-    var v=slides[cur].querySelector('video'); if(v && !v.getAttribute('src') && v.dataset.src){v.src=v.dataset.src;}
+    var v=slides[cur].querySelector('video'); if(v && !v.getAttribute('src') && v.dataset.src){v.src=v.dataset.src;} if(v && !v.hasAttribute('data-auto')){ v.preload='auto'; }
+    var nx=slides[cur+1]&&slides[cur+1].querySelector('video:not([data-auto])'); if(nx && nx.dataset.src){ if(!nx.getAttribute('src')){ nx.src=nx.dataset.src; } nx.preload='auto'; }
     count.textContent=(cur+1)+' / '+n; prog.style.width=((cur+1)/n*100)+'%';
     notes.innerHTML='<small>Notas del orador</small>'+(slides[cur].dataset.notes||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
     try{ if(!fromHash){ history.replaceState(null,'','#diapositiva-'+(cur+1)); } }catch(e){}
@@ -832,9 +835,9 @@ body.export video::-webkit-media-controls{display:none!important}
     var v=c.querySelector('video'); if(!v) return;
     var b=document.createElement('button'); b.type='button'; b.className='bigplay'; b.setAttribute('aria-label','Reproducir vídeo');
     b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>'; c.appendChild(b);
-    var upd=function(){ b.classList.toggle('hide',!v.paused&&!v.ended); };
+    var upd=function(){ b.classList.toggle('hide',!v.paused&&!v.ended); if(!v.paused){ b.classList.remove('wait'); } };
     ['play','playing','pause','ended','seeked','loadeddata'].forEach(function(e){ v.addEventListener(e,upd); }); upd();
-    b.addEventListener('click',function(ev){ ev.stopPropagation(); if(!v.getAttribute('src')&&v.dataset.src){ v.src=v.dataset.src; } var p=v.play(); if(p&&p.catch){ p.catch(function(){}); } });
+    b.addEventListener('click',function(ev){ ev.stopPropagation(); if(!v.getAttribute('src')&&v.dataset.src){ v.src=v.dataset.src; } b.classList.add('wait'); var p=v.play(); if(p&&p.catch){ p.catch(function(){ b.classList.remove('wait'); }); } });
   });
   document.addEventListener('click',function(ev){
     var c=ev.target.closest&&ev.target.closest('.pcd[data-go]'); if(c){ goSec(c.getAttribute('data-go')); }
